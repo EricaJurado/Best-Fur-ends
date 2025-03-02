@@ -1,123 +1,102 @@
-import './createPost.js';
+import { Devvit, useWebView } from "@devvit/public-api";
+import {
+  BlocksToWebviewMessage,
+  WebviewToBlockMessage,
+} from "../game/shared.js";
+import { Preview } from "./components/Preview.js";
+import { getPokemonByName } from "./core/pokeapi.js";
 
-import { Devvit, useState } from '@devvit/public-api';
-
-// Defines the messages that are exchanged between Devvit and Web View
-type WebViewMessage =
-  | {
-      type: 'initialData';
-      data: { username: string; currentCounter: number };
-    }
-  | {
-      type: 'setCounter';
-      data: { newCounter: number };
-    }
-  | {
-      type: 'updateCounter';
-      data: { currentCounter: number };
-    };
+// Devvit.addSettings([
+//   // Just here as an example
+//   {
+//     name: "SECRET_API_KEY",
+//     label: "API Key for secret things",
+//     type: "string",
+//     isSecret: true,
+//     scope: "app",
+//   },
+// ]);
 
 Devvit.configure({
   redditAPI: true,
+  http: true,
   redis: true,
 });
 
-// Add a custom post type to Devvit
+Devvit.addMenuItem({
+  // Please update as you work on your idea!
+  label: "Make Game Post",
+  location: "subreddit",
+  forUserType: "moderator",
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    const subreddit = await reddit.getCurrentSubreddit();
+    const post = await reddit.submitPost({
+      // Title of the post. You'll want to update!
+      title: "Best Fur-ends Game",
+      subredditName: subreddit.name,
+      preview: <Preview />,
+    });
+    ui.showToast({ text: "Created post!" });
+    ui.navigateTo(post.url);
+  },
+});
+
+// Add a post type definition
 Devvit.addCustomPostType({
-  name: 'Webview Example',
-  height: 'tall',
+  name: "Experience Post",
+  height: "tall",
   render: (context) => {
-    // Load username with `useAsync` hook
-    const [username] = useState(async () => {
-      const currUser = await context.reddit.getCurrentUser();
-      return currUser?.username ?? 'anon';
-    });
+    const { mount } = useWebView<WebviewToBlockMessage, BlocksToWebviewMessage>(
+      {
+        onMessage: async (event, { postMessage }) => {
+          console.log("Received message", event);
+          const data = event as unknown as WebviewToBlockMessage;
 
-    // Load latest counter from redis with `useAsync` hook
-    const [counter, setCounter] = useState(async () => {
-      const redisCount = await context.redis.get(`counter_${context.postId}`);
-      return Number(redisCount ?? 0);
-    });
+          switch (data.type) {
+            case "INIT":
+              postMessage({
+                type: "INIT_RESPONSE",
+                payload: {
+                  postId: context.postId!,
+                },
+              });
+              break;
+            case "GET_POKEMON_REQUEST":
+              context.ui.showToast({
+                text: `Received message: ${JSON.stringify(data)}`,
+              });
+              const pokemon = await getPokemonByName(data.payload.name);
 
-    // Create a reactive state for web view visibility
-    const [webviewVisible, setWebviewVisible] = useState(false);
+              postMessage({
+                type: "GET_POKEMON_RESPONSE",
+                payload: {
+                  name: pokemon.name,
+                  number: pokemon.id,
+                  // Note that we don't allow outside images on Reddit if
+                  // wanted to get the sprite. Please reach out to support
+                  // if you need this for your app!
+                },
+              });
+              break;
 
-    // When the web view invokes `window.parent.postMessage` this function is called
-    const onMessage = async (msg: WebViewMessage) => {
-      switch (msg.type) {
-        case 'setCounter':
-          await context.redis.set(`counter_${context.postId}`, msg.data.newCounter.toString());
-          context.ui.webView.postMessage('myWebView', {
-            type: 'updateCounter',
-            data: {
-              currentCounter: msg.data.newCounter,
-            },
-          });
-          setCounter(msg.data.newCounter);
-          break;
-        case 'initialData':
-        case 'updateCounter':
-          break;
-
-        default:
-          throw new Error(`Unknown message type: ${msg satisfies never}`);
-      }
-    };
-
-    // When the button is clicked, send initial data to web view and show it
-    const onShowWebviewClick = () => {
-      setWebviewVisible(true);
-      context.ui.webView.postMessage('myWebView', {
-        type: 'initialData',
-        data: {
-          username: username,
-          currentCounter: counter,
+            default:
+              console.error("Unknown message type", data satisfies never);
+              break;
+          }
         },
-      });
-    };
+      }
+    );
 
-    // Render the custom post type
     return (
-      <vstack grow padding="small">
-        <vstack
-          grow={!webviewVisible}
-          height={webviewVisible ? '0%' : '100%'}
-          alignment="middle center"
+      <vstack height="100%" width="100%" alignment="center middle">
+        <button
+          onPress={() => {
+            mount();
+          }}
         >
-          <text size="xlarge" weight="bold">
-            Example App
-          </text>
-          <spacer />
-          <vstack alignment="start middle">
-            <hstack>
-              <text size="medium">Username:</text>
-              <text size="medium" weight="bold">
-                {' '}
-                {username ?? ''}
-              </text>
-            </hstack>
-            <hstack>
-              <text size="medium">Current counter:</text>
-              <text size="medium" weight="bold">
-                {' '}
-                {counter ?? ''}
-              </text>
-            </hstack>
-          </vstack>
-          <spacer />
-          <button onPress={onShowWebviewClick}>Launch App</button>
-        </vstack>
-        <vstack grow={webviewVisible} height={webviewVisible ? '100%' : '0%'}>
-          <vstack border="thick" borderColor="black" height={webviewVisible ? '100%' : '0%'}>
-            <webview
-              id="myWebView"
-              url="page.html"
-              onMessage={(msg) => onMessage(msg as WebViewMessage)}
-              grow
-              height={webviewVisible ? '100%' : '0%'}
-            />
-          </vstack>
-        </vstack>
+          Launch
+        </button>
       </vstack>
     );
   },

@@ -3,7 +3,7 @@ import type {
   RedisClient,
   Scheduler,
 } from "@devvit/public-api";
-import type { PostId } from "../src/shared.ts";
+import type { PostId } from "./shared.ts";
 
 export abstract class ServiceBase {
   protected readonly redis: RedisClient;
