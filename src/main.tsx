@@ -73,9 +73,6 @@ Devvit.addCustomPostType({
                 payload: {
                   name: pokemon.name,
                   number: pokemon.id,
-                  // Note that we don't allow outside images on Reddit if
-                  // wanted to get the sprite. Please reach out to support
-                  // if you need this for your app!
                 },
               });
               break;
@@ -95,7 +92,7 @@ Devvit.addCustomPostType({
             mount();
           }}
         >
-          Launch
+          Launch Game
         </button>
       </vstack>
     );

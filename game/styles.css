@@ -1,0 +1,12 @@
+.pet-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  margin: 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  cursor: pointer;
+}
