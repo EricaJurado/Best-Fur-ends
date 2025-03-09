@@ -7,12 +7,14 @@ export type PetId = string;
 export type Page = "home" | "pokemon";
 
 export type WebviewToBlockMessage = 
-  | { type: "INIT" } 
-  | { type: "GET_POKEMON_REQUEST"; payload: { name: string } };
+  | { type: "INIT" }
+  | { type: "GET_POKEMON_REQUEST"; payload: { name: string } }
+  | { type: "SPONSOR_PET_REQUEST"; payload: { petId: PetId } };
 
 export type BlocksToWebviewMessage = 
   | { type: "INIT_RESPONSE"; payload: { postId: string } } 
-  | { type: "GET_POKEMON_RESPONSE"; payload: { number: number; name: string; error?: string } };
+  | { type: "GET_POKEMON_RESPONSE"; payload: { number: number; name: string; error?: string } }
+  | { type: "SPONSOR_PET_RESPONSE"; payload: { petId: PetId; error?: string } };
 
 export type DevvitMessage = { 
   type: "devvit-message"; 
@@ -52,4 +54,10 @@ export enum PetCategory {
   Cat = 'Cat',
   Rabbit = 'Rabbit',
   Bird = 'Bird'
+}
+
+import { Context } from "@devvit/public-api";
+
+export interface AppContext {
+  context: Context;
 }

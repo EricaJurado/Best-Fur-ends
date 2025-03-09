@@ -132,20 +132,22 @@ const GuessPage = ({ postId }: GuessPageProps) => {
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
-      {/* Show petList that aren't assigned a parent */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        {renderDraggables(null)}{" "}
-      </div>
+    <>
+      <DndContext onDragEnd={handleDragEnd}>
+        {/* Show petList that aren't assigned a parent */}
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          {renderDraggables(null)}{" "}
+        </div>
 
-      {petList.map((pet) => (
-        <PetTileDroppable key={pet.id} id={pet.id} pet={pet}>
-          {renderDraggables(pet.id)}{" "}
-          {/* Show "Drop here" if no other pets are assigned */}
-          {petList.every((item) => item.parent !== pet.id) && "Drop here"}
-        </PetTileDroppable>
-      ))}
-    </DndContext>
+        {petList.map((pet) => (
+          <PetTileDroppable key={pet.id} id={pet.id} pet={pet}>
+            {renderDraggables(pet.id)}{" "}
+            {/* Show "Drop here" if no other pets are assigned */}
+            {petList.every((item) => item.parent !== pet.id) && "Drop here"}
+          </PetTileDroppable>
+        ))}
+      </DndContext>
+    </>
   );
 };
 

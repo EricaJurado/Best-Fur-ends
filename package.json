@@ -15,10 +15,13 @@
     "@devvit/public-api": "0.11.7",
     "@dnd-kit/core": "^6.3.1",
     "@petfinder/petfinder-js": "^1.0.6",
+    "axios": "^1.8.2",
+    "https": "^1.0.0",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "@types/node": "22.13.5",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",

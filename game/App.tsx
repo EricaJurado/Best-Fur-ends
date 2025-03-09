@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { Page } from "./shared";
-import { PokemonPage } from "./pages/PokemonPage";
+import { Page, AppContext } from "./shared";
 import GuessPage from "./pages/GuessPage";
 import { usePage } from "./hooks/usePage";
 import { sendToDevvit } from "./utils";
-import { useDevvitListener } from "./hooks/useDevvitListener";
 
-const PageComponent = ({ page, postId }: { page: Page; postId: string }) => {
+interface PageComponentProps {
+  page: Page;
+  postId: string;
+}
+
+const PageComponent = ({ page, postId }: PageComponentProps) => {
   switch (page) {
     case "home":
       return <GuessPage postId={postId} />;
-    case "pokemon":
-      return <PokemonPage />;
     default:
       throw new Error(`Unknown page: ${page}`);
   }
@@ -20,17 +21,10 @@ const PageComponent = ({ page, postId }: { page: Page; postId: string }) => {
 export const App = () => {
   const [postId, setPostId] = useState<string>("");
   const page = usePage();
-  const initData = useDevvitListener("INIT_RESPONSE");
 
   useEffect(() => {
     sendToDevvit({ type: "INIT" });
   }, []);
-
-  useEffect(() => {
-    if (initData) {
-      setPostId(initData.postId);
-    }
-  }, [initData]);
 
   return (
     <div className="h-full">
